@@ -32,6 +32,7 @@ const BOT_CHANNEL = -100123456789; // Insert telegram channel id.
 - Modify the [variables](#Variables).
 - Finally, **Deploy**.
 
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/vauth/filestream-cf)
 ### Setup:
 - Once you deployed the bot on Cloudflare.
 - Open `XXX.XXXX.workers.dev/registerWebhook` to register your bot.
