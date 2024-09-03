@@ -202,7 +202,7 @@ async function onMessage(event, message) {
 
   if (fSave.error_code) {return sendMessage(message.chat.id, message.message_id, fSave.description)}
 
-  const final_hash = (btoa(fSave.chat.id + "/" + fSave.message_id)).replace('=', '')
+  const final_hash = (btoa(fSave.chat.id + "/" + fSave.message_id)).replace(/=/g, "")
   const final_link = `${url.origin}/?file=${final_hash}`
   const final_text = `*File Name:* \`${fName}\`\n*File Hash:* \`${final_hash}\`\n*Download Link:* ${final_link}`
   
