@@ -46,7 +46,7 @@ async function handleRequest(event) {
 
     return new Response(rdata, {
         status: 200, headers: {
-            "Content-Disposition": `attachment; filename=${rname}`,
+            "Content-Disposition": `inline; filename=${rname}`, // attachment;
             "Content-Length": rsize,
             ...HEADERS_FILE
         }
@@ -84,7 +84,10 @@ async function RetrieveFile(channel_id, message_id) {
         return ERROR_406
     }
 
-    return [await fetchFile((await getFile(fID)).file_path), fName, fSize];
+    const file = await getFile(fID)
+    if (file.error_code){return file}
+
+    return [await fetchFile(file.file_path), fName, fSize];
 }
 
 // ---------- Raise Error ---------- //
@@ -151,7 +154,8 @@ async function editMessage(channel_id, message_id, caption_text) {
 
 async function getFile(file_id) {
     const response = await fetch(apiUrl('getFile', {file_id: file_id}))
-    return (await response.json()).result;
+    if (response.status == 200) {return (await response.json()).result;
+    } else {return await response.json()}
 }
 
 async function fetchFile(file_path) {
@@ -176,6 +180,10 @@ async function onMessage(event, message) {
   let fID; let fName; let fSave;
   let url = new URL(event.request.url);
 
+  if (message.chat.id.toString().includes("-100")) {
+    return
+  }
+
   if (message.chat.id != BOT_OWNER) {
     return sendMessage(message.chat.id, message.message_id, "Access forbidden.\nDeploy your own bot: https://github.com/vauth/filestream-cf")
   }
@@ -197,7 +205,7 @@ async function onMessage(event, message) {
     fName = message.photo[message.photo.length - 1].file_unique_id + '.jpg';
     fSave = await sendPhoto(BOT_CHANNEL, fID)
   } else {
-    return sendMessage(message.chat.id, message.message_id, "Send me any file/video/gif/audio")
+    return sendMessage(message.chat.id, message.message_id, "Send me any file/video/gif/audio (i<=20MB)")
   }
 
   if (fSave.error_code) {return sendMessage(message.chat.id, message.message_id, fSave.description)}
