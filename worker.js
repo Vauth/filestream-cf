@@ -15,6 +15,7 @@ const ERROR_404 = {"ok":false,"error_code":404,"description":"Bad Request: missi
 const ERROR_405 = {"ok":false,"error_code":405,"description":"Bad Request: method not allowed"};
 const ERROR_406 = {"ok":false,"error_code":406,"description":"Bad Request: file type invalid"};
 const ERROR_407 = {"ok":false,"error_code":407,"description":"Bad Request: file hash invalid by atob"};
+const ERROR_408 = {"ok":false,"error_code":408,"description":"Bad Request: mode not in [attachment, inline]"};
 
 // ---------- Event Listener ---------- // 
 
@@ -25,12 +26,14 @@ addEventListener('fetch', event => {
 async function handleRequest(event) {
     const url = new URL(event.request.url);
     const file = url.searchParams.get('file');
-    
+    const mode = url.searchParams.get('mode') || "attachment";
+     
     if (url.pathname === BOT_WEBHOOK) {return handleWebhook(event)}
     if (url.pathname === '/registerWebhook') {return registerWebhook(event, url, BOT_WEBHOOK, BOT_SECRET)}
     if (url.pathname === '/unregisterWebhook') {return unregisterWebhook(event)}
 
     if (!file) {return Raise(ERROR_404, 404);}
+    if (!["attachment", "inline"].includes(mode)) {return Raise(ERROR_408, 407)}
     if (!WHITE_METHODS.includes(event.request.method)) {return Raise(ERROR_405, 405);}
     try {atob(file)} catch {return Raise(ERROR_407, 407)}
 
@@ -46,7 +49,7 @@ async function handleRequest(event) {
 
     return new Response(rdata, {
         status: 200, headers: {
-            "Content-Disposition": `attachment; filename=${rname}`, // inline;
+            "Content-Disposition": `${mode}; filename=${rname}`, // inline;
             "Content-Length": rsize,
             ...HEADERS_FILE
         }
@@ -212,7 +215,7 @@ async function onMessage(event, message) {
 
   const final_hash = (btoa(fSave.chat.id + "/" + fSave.message_id)).replace(/=/g, "")
   const final_link = `${url.origin}/?file=${final_hash}`
-  const final_text = `*File Name:* \`${fName}\`\n*File Hash:* \`${final_hash}\`\n*Download Link:* ${final_link}`
+  const final_text = `*File Name:* \`${fName}\`\n*File Hash:* \`${final_hash}\`\n*Download Link:* ${final_link}\n*Stream Parameter:* \`&mode=inline\``
   
   return sendMessage(message.chat.id, message.message_id, final_text) 
 }
