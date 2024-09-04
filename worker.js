@@ -180,7 +180,7 @@ async function onUpdate(event, update) {
 }
 
 async function onMessage(event, message) {
-  let fID; let fName; let fSave;
+  let fID; let fName; let fSave; let fType;
   let url = new URL(event.request.url);
 
   if (message.chat.id.toString().includes("-100")) {
@@ -194,18 +194,22 @@ async function onMessage(event, message) {
   if (message.document){
     fID = message.document.file_id;
     fName = message.document.file_name;
+    fType = message.document.mime_type.split("/")[0]
     fSave = await sendDocument(BOT_CHANNEL, fID)
   } else if (message.audio) {
     fID = message.audio.file_id;
     fName = message.audio.file_name;
+    fType = message.audio.mime_type.split("/")[0]
     fSave = await sendDocument(BOT_CHANNEL, fID)
   } else if (message.video) {
     fID = message.video.file_id;
     fName = message.video.file_name;
+    fType = message.video.mime_type.split("/")[0]
     fSave = await sendDocument(BOT_CHANNEL, fID)
   } else if (message.photo) {
     fID = message.photo[message.photo.length - 1].file_id;
     fName = message.photo[message.photo.length - 1].file_unique_id + '.jpg';
+    fType = "image/jpg".split("/")[0];
     fSave = await sendPhoto(BOT_CHANNEL, fID)
   } else {
     return sendMessage(message.chat.id, message.message_id, "Send me any file/video/gif/audio (i<=20MB)")
@@ -215,7 +219,10 @@ async function onMessage(event, message) {
 
   const final_hash = (btoa(fSave.chat.id + "/" + fSave.message_id)).replace(/=/g, "")
   const final_link = `${url.origin}/?file=${final_hash}`
-  const final_text = `*File Name:* \`${fName}\`\n*File Hash:* \`${final_hash}\`\n*Download Link:* ${final_link}\n*Stream Parameter:* \`&mode=inline\``
+  const final_stre = `${url.origin}/?file=${final_hash}&mode=inline`
+
+  let final_text = `*File Name:* \`${fName}\`\n*File Hash:* \`${final_hash}\`\n*Download Link:* ${final_link}\n`
+  if (["video", "audio", "image"].includes(fType)) {final_text += `*Stream Link:* ${final_stre}`}
   
   return sendMessage(message.chat.id, message.message_id, final_text) 
 }
