@@ -46,7 +46,7 @@ async function handleRequest(event) {
 
     return new Response(rdata, {
         status: 200, headers: {
-            "Content-Disposition": `inline; filename=${rname}`, // attachment;
+            "Content-Disposition": `attachment; filename=${rname}`, // inline;
             "Content-Length": rsize,
             ...HEADERS_FILE
         }
