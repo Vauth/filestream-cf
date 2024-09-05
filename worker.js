@@ -46,11 +46,13 @@ async function handleRequest(event) {
     const rdata = retrieve[0]
     const rname = retrieve[1]
     const rsize = retrieve[2]
+    const rtype = retrieve[3]
 
     return new Response(rdata, {
         status: 200, headers: {
             "Content-Disposition": `${mode}; filename=${rname}`, // inline;
             "Content-Length": rsize,
+            "Content-Type": rtype,
             ...HEADERS_FILE
         }
     });
@@ -59,7 +61,7 @@ async function handleRequest(event) {
 // ---------- Retrieve File ---------- //
 
 async function RetrieveFile(channel_id, message_id) {
-    let  fID; let fName; let fSize; let fLen;
+    let  fID; let fName; let fType; let fSize; let fLen;
     let data = await editMessage(channel_id, message_id, await UUID());
     if (data.error_code){return data}
     
@@ -67,21 +69,25 @@ async function RetrieveFile(channel_id, message_id) {
         fLen = data.document.length - 1
         fID = data.document.file_id;
         fName = data.document.file_name;
+        fType = data.document.mime_type;
         fSize = data.document.file_size;
     } else if (data.audio) {
         fLen = data.audio.length - 1
         fID = data.audio.file_id;
         fName = data.audio.file_name;
+        fType = data.audio.mime_type;
         fSize = data.audio.file_size;
     } else if (data.video) {
         fLen = data.video.length - 1
         fID = data.video.file_id;
         fName = data.video.file_name;
+        fType = data.video.mime_type;
         fSize = data.video.file_size;
     } else if (data.photo) {
         fLen = data.photo.length - 1
         fID = data.photo[fLen].file_id;
         fName = data.photo[fLen].file_unique_id + '.jpg';
+        fType = "image/jpg";
         fSize = data.photo[fLen].file_size;
     } else {
         return ERROR_406
@@ -90,7 +96,7 @@ async function RetrieveFile(channel_id, message_id) {
     const file = await getFile(fID)
     if (file.error_code){return file}
 
-    return [await fetchFile(file.file_path), fName, fSize];
+    return [await fetchFile(file.file_path), fName, fSize, fType];
 }
 
 // ---------- Raise Error ---------- //
