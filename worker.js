@@ -137,6 +137,12 @@ async function unregisterWebhook(event) {
 
 // ---------- Telegram API ---------- //
 
+async function getMe() {
+  const response = await fetch(apiUrl('getMe'))
+  if (response.status == 200) {return (await response.json()).result;
+  } else {return await response.json()}
+}
+
 async function sendMessage(chat_id, reply_id, text) {
   const response = await fetch(apiUrl('sendMessage', {chat_id: chat_id, reply_to_message_id: reply_id, parse_mode: 'markdown', text}))
   if (response.status == 200) {return (await response.json()).result;
@@ -188,9 +194,36 @@ async function onUpdate(event, update) {
 async function onMessage(event, message) {
   let fID; let fName; let fSave; let fType;
   let url = new URL(event.request.url);
+  let bot = await getMe()
 
   if (message.chat.id.toString().includes("-100")) {
     return
+  }
+
+  if (message.text && message.text.startsWith("/start ")) {
+    const file = message.text.split("/start ")[1]
+    try {atob(file)} catch {return await sendMessage(message.chat.id, message.message_id, ERROR_407.description)}
+
+    const file_path = atob(file)
+    const channel_id = file_path.split('/')[0]
+    const message_id = file_path.split('/')[1]
+    const data = await editMessage(channel_id, message_id, await UUID());
+
+    if (data.document) {
+      fID = data.document.file_id;
+      return await sendDocument(message.chat.id, fID)
+    } else if (data.audio) {
+      fID = data.audio.file_id;
+      return await sendDocument(message.chat.id, fID)
+    } else if (data.video) {
+      fID = data.video.file_id;
+      return await sendDocument(message.chat.id, fID)
+    } else if (data.photo) {
+      fID = data.photo[data.photo.length - 1].file_id;
+      return await sendPhoto(message.chat.id, fID)
+    } else {
+      return sendMessage(message.chat.id, message.message_id, "Bad Request: File not found")
+    }
   }
 
   if (message.chat.id != BOT_OWNER) {
@@ -226,8 +259,9 @@ async function onMessage(event, message) {
   const final_hash = (btoa(fSave.chat.id + "/" + fSave.message_id)).replace(/=/g, "")
   const final_link = `${url.origin}/?file=${final_hash}`
   const final_stre = `${url.origin}/?file=${final_hash}&mode=inline`
+  const final_tele = `https://t.me/${bot.username}/?start=${final_hash}`
 
-  let final_text = `*File Name:* \`${fName}\`\n*File Hash:* \`${final_hash}\`\n*Download Link:* ${final_link}\n`
+  let final_text = `*File Name:* \`${fName}\`\n*File Hash:* \`${final_hash}\`\n*Telegram Link:* ${final_tele}\n*Download Link:* ${final_link}\n`
   if (["video", "audio", "image"].includes(fType)) {final_text += `*Stream Link:* ${final_stre}`}
   
   return sendMessage(message.chat.id, message.message_id, final_text) 
