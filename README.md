@@ -38,4 +38,8 @@ const BOT_CHANNEL = -100123456789; // Insert telegram channel id.
 - Open `XXX.XXXX.workers.dev/registerWebhook` to register your bot.
 - Then you can start using your bot.
 
+<br>
 
+- **Response Example:**
+  - `Telegram Link: t.me/botusername/?start=ZG9uJ3QgZGVjb2Rl`
+  - `Download Link: XX.XX.workers.dev/?file=ZG9uJ3QgZGVjb2Rl`
