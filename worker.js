@@ -33,9 +33,9 @@ async function handleRequest(event) {
     if (url.pathname === '/unregisterWebhook') {return unregisterWebhook(event)}
 
     if (!file) {return Raise(ERROR_404, 404);}
-    if (!["attachment", "inline"].includes(mode)) {return Raise(ERROR_408, 407)}
+    if (!["attachment", "inline"].includes(mode)) {return Raise(ERROR_408, 404)}
     if (!WHITE_METHODS.includes(event.request.method)) {return Raise(ERROR_405, 405);}
-    try {atob(file)} catch {return Raise(ERROR_407, 407)}
+    try {atob(file)} catch {return Raise(ERROR_407, 404)}
 
     const file_path = atob(file)
     const channel_id = file_path.split('/')[0]
