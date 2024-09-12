@@ -31,6 +31,7 @@ async function handleRequest(event) {
     if (url.pathname === BOT_WEBHOOK) {return handleWebhook(event)}
     if (url.pathname === '/registerWebhook') {return registerWebhook(event, url, BOT_WEBHOOK, BOT_SECRET)}
     if (url.pathname === '/unregisterWebhook') {return unregisterWebhook(event)}
+    if (url.pathname === '/getMe') {return new Response(JSON.stringify(await getMe()), {headers: HEADERS_ERRR, status: 202})}
 
     if (!file) {return Raise(ERROR_404, 404);}
     if (!["attachment", "inline"].includes(mode)) {return Raise(ERROR_408, 404)}
