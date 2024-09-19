@@ -253,7 +253,7 @@ async function onMessage(event, message) {
     fType = "image/jpg".split("/")[0];
     fSave = await sendPhoto(BOT_CHANNEL, fID)
   } else {
-    return sendMessage(message.chat.id, message.message_id, "Send me any file/video/gif/audio (i<=20MB)")
+    return sendMessage(message.chat.id, message.message_id, "Send me any file/video/gif/audio (t<=4GB, e<=20MB)")
   }
 
   if (fSave.error_code) {return sendMessage(message.chat.id, message.message_id, fSave.description)}
