@@ -41,7 +41,7 @@ async function handleRequest(event) {
 
     const file_path = atob(file)
     const channel_id = parseInt(file_path.split('/')[0])/-SIA_NUMBER
-    const file_id = parseInt(file_path.split('/')[1])/-SIA_NUMBER
+    const file_id = parseInt(file_path.split('/')[1])/SIA_NUMBER
     const retrieve = await RetrieveFile(channel_id, file_id);
     if (retrieve.error_code) {return await Raise(retrieve, retrieve.error_code)};
 
@@ -208,7 +208,7 @@ async function onMessage(event, message) {
 
     const file_path = atob(file)
     const channel_id = parseInt(file_path.split('/')[0])/-SIA_NUMBER
-    const message_id = parseInt(file_path.split('/')[1])/-SIA_NUMBER
+    const message_id = parseInt(file_path.split('/')[1])/SIA_NUMBER
     const data = await editMessage(channel_id, message_id, await UUID());
 
     if (data.document) {
@@ -258,13 +258,13 @@ async function onMessage(event, message) {
 
   if (fSave.error_code) {return sendMessage(message.chat.id, message.message_id, fSave.description)}
 
-  const final_hash = (btoa(fSave.chat.id*-SIA_NUMBER + "/" + fSave.message_id*-SIA_NUMBER)).replace(/=/g, "")
+  const final_hash = (btoa(fSave.chat.id*-SIA_NUMBER + "/" + fSave.message_id*SIA_NUMBER)).replace(/=/g, "")
   const final_link = `${url.origin}/?file=${final_hash}`
   const final_stre = `${url.origin}/?file=${final_hash}&mode=inline`
   const final_tele = `https://t.me/${bot.username}/?start=${final_hash}`
 
-  let final_text = `*File Name:* \`${fName}\`\n*File Hash:* \`${final_hash}\`\n*Telegram Link:* ${final_tele}\n*Download Link:* ${final_link}\n`
-  if (["video", "audio", "image"].includes(fType)) {final_text += `*Stream Link:* ${final_stre}`}
+  let final_text = `*File Name:* \`${fName}\`\n*File Hash:* \`${final_hash}\`\n*Telegram Link:* [${final_tele}](${final_tele})\n*Download Link:* [${final_link}](${final_link})\n`
+  if (["video", "audio", "image"].includes(fType)) {final_text += `*Stream Link:* [${final_stre}](${final_stre})`}
   
   return sendMessage(message.chat.id, message.message_id, final_text) 
 }
