@@ -51,9 +51,9 @@ Stream Link: XX.XX.workers.dev/?file=ZG9uJ3QgZGVjb2Rl&mode=inline
 ```
 
 ### Limitation:
-- Telegram Link: `>4.00GB`
-- Download Link: `>20.00MB`
-- Stream Link: `>20.00MB`
+- Telegram Link: `<4.00GB`
+- Download Link: `<20.00MB`
+- Stream Link: `<20.00MB`
 
 <br>
 
