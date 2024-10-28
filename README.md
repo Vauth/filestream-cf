@@ -16,7 +16,7 @@ const SIA_NUMBER = 1234; // Insert a random integer.
 ### Setup:
 - Get `BOT_TOKEN` from [@botfather](https://t.me/botfather).
 - Change `BOT_WEBHOOK` with your preferred webhook.
-- Change `BOT_SECRET` with a powerful secret text.
+- Change `BOT_SECRET` with a powerful secret text (only `[A-Z, a-z, 0-9, _, -]` are allowed).
 - Change `SIA_NUMBER` with a random integer (number).
 - Get `BOT_OWNER` from [@idbot](https://t.me/username_to_id_bot).
 - Get `BOT_CHANNEL` id by forwarding a message from channel to [@idbot](https://t.me/username_to_id_bot).
