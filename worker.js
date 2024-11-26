@@ -145,8 +145,8 @@ async function getMe() {
   } else {return await response.json()}
 }
 
-async function sendMessage(chat_id, reply_id, text) {
-  const response = await fetch(apiUrl('sendMessage', {chat_id: chat_id, reply_to_message_id: reply_id, parse_mode: 'markdown', text}))
+async function sendMessage(chat_id, reply_id, text, reply_markup=[]) {
+  const response = await fetch(apiUrl('sendMessage', {chat_id: chat_id, reply_to_message_id: reply_id, parse_mode: 'markdown', text, reply_markup: JSON.stringify({inline_keyboard: reply_markup})}))
   if (response.status == 200) {return (await response.json()).result;
   } else {return await response.json()}
 }
@@ -229,7 +229,8 @@ async function onMessage(event, message) {
   }
 
   if (message.chat.id != BOT_OWNER) {
-    return sendMessage(message.chat.id, message.message_id, "Access forbidden.\nDeploy your own bot: https://github.com/vauth/filestream-cf")
+    const buttons = [[{ text: "Source Code", url: "https://github.com/vauth/filestream-cf" }]];
+    return sendMessage(message.chat.id, message.message_id, "Access forbidden.\nDeploy your own [filestream-cf](https://github.com/vauth/filestream-cf) bot.", buttons)
   }
 
   if (message.document){
@@ -253,7 +254,8 @@ async function onMessage(event, message) {
     fType = "image/jpg".split("/")[0];
     fSave = await sendPhoto(BOT_CHANNEL, fID)
   } else {
-    return sendMessage(message.chat.id, message.message_id, "Send me any file/video/gif/audio (t<=4GB, e<=20MB)")
+    const buttons = [[{ text: "Source Code", url: "https://github.com/vauth/filestream-cf" }]];
+    return sendMessage(message.chat.id, message.message_id, "Send me any file/video/gif/audio (t<=4GB, e<=20MB)", buttons)
   }
 
   if (fSave.error_code) {return sendMessage(message.chat.id, message.message_id, fSave.description)}
@@ -263,8 +265,12 @@ async function onMessage(event, message) {
   const final_stre = `${url.origin}/?file=${final_hash}&mode=inline`
   const final_tele = `https://t.me/${bot.username}/?start=${final_hash}`
 
-  let final_text = `*File Name:* \`${fName}\`\n*File Hash:* \`${final_hash}\`\n*Telegram Link:* [${final_tele}](${final_tele})\n*Download Link:* [${final_link}](${final_link})\n`
-  if (["video", "audio", "image"].includes(fType)) {final_text += `*Stream Link:* [${final_stre}](${final_stre})`}
-  
-  return sendMessage(message.chat.id, message.message_id, final_text) 
+  const buttons = [
+    [{ text: "Telegram Link", url: final_tele }, { text: "Download Link", url: final_link }],
+    [{ text: "Stream Link", url: final_stre }]
+  ];
+
+  let final_text = `*File Name:* \`${fName}\`\n*File Hash:* \`${final_hash}\``
+
+  return sendMessage(message.chat.id, message.message_id, final_text, buttons) 
 }
