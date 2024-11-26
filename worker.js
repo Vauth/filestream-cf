@@ -5,7 +5,8 @@ const BOT_WEBHOOK = "/endpoint"; // Let it be as it is.
 const BOT_SECRET = "BOT_SECRET"; // Insert a powerful secret text (only [A-Z, a-z, 0-9, _, -] are allowed).
 const BOT_OWNER = 123456789; // Insert your telegram account id.
 const BOT_CHANNEL = -100123456789; // Insert your telegram channel id which the bot is admin in.
-const SIA_NUMBER = 1234; // Insert a random integer number and keep it safe.
+const SIA_NUMBER = 12345; // Insert a random integer number and keep it safe.
+const PUBLIC_BOT = false; // Let it be (unless you want to make your bot public).
 
 // ---------- Do Not Modify ---------- // 
 
@@ -228,7 +229,7 @@ async function onMessage(event, message) {
     }
   }
 
-  if (message.chat.id != BOT_OWNER) {
+  if (!PUBLIC_BOT && message.chat.id != BOT_OWNER) {
     const buttons = [[{ text: "Source Code", url: "https://github.com/vauth/filestream-cf" }]];
     return sendMessage(message.chat.id, message.message_id, "Access forbidden.\nDeploy your own [filestream-cf](https://github.com/vauth/filestream-cf) bot.", buttons)
   }
