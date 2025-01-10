@@ -48,6 +48,7 @@ const PUBLIC_BOT = false; // Make your bot public.
 ## 📚 Response
 ```python
 Telegram Link: t.me/usernamebot/?start=ZG9uJ3QgZGVjb2Rl
+Inline Link: @bot ZG9uJ3QgZGVjb2Rl
 Download Link: XX.XX.workers.dev/?file=ZG9uJ3QgZGVjb2Rl
 Stream Link: XX.XX.workers.dev/?file=ZG9uJ3QgZGVjb2Rl&mode=inline
 ```
@@ -61,4 +62,4 @@ Stream Link: XX.XX.workers.dev/?file=ZG9uJ3QgZGVjb2Rl&mode=inline
 
 ## 📷 Screenshot
 
-<a href="#Screenshot"><img src="https://github.com/user-attachments/assets/d34fd6d7-0f6e-466c-8d9b-e64c3fcfaa0c" width="300px"></a>
+<a href="#Screenshot"><img src="https://github.com/user-attachments/assets/09101285-c68c-44a1-aaa1-e2d5c4c0cf90" width="300px"></a>
