@@ -170,6 +170,20 @@ async function editMessage(channel_id, message_id, caption_text) {
     } else {return await response.json()}
 }
 
+async function answerInlineArticle(query_id, title, description, text, reply_markup=[], id='1') {
+  const data = [{type: 'article', id: id, title: title, thumbnail_url: "https://i.ibb.co/5s8hhND/dac5fa134448.png", description: description, input_message_content: {message_text: text, parse_mode: 'markdown'}, reply_markup: {inline_keyboard: reply_markup}}];
+  const response = await fetch(await this.apiUrl('answerInlineQuery', {inline_query_id: query_id, results: JSON.stringify(data), cache_time: 1}))
+  if (response.status == 200) {return (await response.json()).result;
+  } else {return await response.json()}
+}
+
+async function answerInlineDocument(query_id, title, file_id, mime_type, reply_markup=[], id='1') {
+  const data = [{type: 'document', id: id, title: title, document_file_id: file_id, mime_type: mime_type, description: mime_type, reply_markup: {inline_keyboard: reply_markup}}];
+  const response = await fetch(await this.apiUrl('answerInlineQuery', {inline_query_id: query_id, results: JSON.stringify(data), cache_time: 1}))
+  if (response.status == 200) {return (await response.json()).result;
+  } else {return await response.json()}
+}
+
 async function getFile(file_id) {
     const response = await fetch(apiUrl('getFile', {file_id: file_id}))
     if (response.status == 200) {return (await response.json()).result;
@@ -187,17 +201,80 @@ function apiUrl (methodName, params = null) {
     return `https://api.telegram.org/bot${BOT_TOKEN}/${methodName}${query}`
 }
 
-
-// ---------- Message Listener ---------- // 
+// ---------- Update Listener ---------- // 
 
 async function onUpdate(event, update) {
+  if (update.inline_query) {await onInline(event, update.inline_query)}
   if ('message' in update) {await onMessage(event, update.message)}
 }
+
+// ---------- Inline Listener ---------- // 
+
+async function onInline(event, inline) {
+  let  fID; let fName; let fType; let fSize; let fLen;
+
+  if (!PUBLIC_BOT && inline.from.id != BOT_OWNER) {
+    const buttons = [[{ text: "Source Code", url: "https://github.com/vauth/filestream-cf" }]];
+    return await answerInlineArticle(inline.id, "Access forbidden", "Deploy your own filestream-cf.", "*❌ Access forbidden.*\n📡 Deploy your own [filestream-cf](https://github.com/vauth/filestream-cf) bot.", buttons)
+  }
+ 
+  try {atob(inline.query)} catch {
+    const buttons = [[{ text: "Source Code", url: "https://github.com/vauth/filestream-cf" }]];
+    return await answerInlineArticle(inline.id, "Error", ERROR_407.description, ERROR_407.description, buttons)
+  }
+
+  const file_path = atob(inline.query)
+  const channel_id = parseInt(file_path.split('/')[0])/-SIA_NUMBER
+  const message_id = parseInt(file_path.split('/')[1])/SIA_NUMBER
+  const data = await editMessage(channel_id, message_id, await UUID());
+
+  if (data.error_code){
+    const buttons = [[{ text: "Source Code", url: "https://github.com/vauth/filestream-cf" }]];
+    return await answerInlineArticle(inline.id, "Error", data.description, data.description, buttons)
+  }
+
+  if (data.document){
+    fLen = data.document.length - 1
+    fID = data.document.file_id;
+    fName = data.document.file_name;
+    fType = data.document.mime_type;
+    fSize = data.document.file_size;
+  } else if (data.audio) {
+    fLen = data.audio.length - 1
+    fID = data.audio.file_id;
+    fName = data.audio.file_name;
+    fType = data.audio.mime_type;
+    fSize = data.audio.file_size;
+  } else if (data.video) {
+    fLen = data.video.length - 1
+    fID = data.video.file_id;
+    fName = data.video.file_name;
+    fType = data.video.mime_type;
+    fSize = data.video.file_size;
+  } else if (data.photo) {
+    fLen = data.photo.length - 1
+    fID = data.photo[fLen].file_id;
+    fName = data.photo[fLen].file_unique_id + '.jpg';
+    fType = "image/jpg";
+    fSize = data.photo[fLen].file_size;
+  } else {
+    return ERROR_406
+  }
+
+  const buttons = [[{ text: "Send Again", switch_inline_query_current_chat: inline.query }]];
+  return await answerInlineDocument(inline.id, fName, fID, fType, buttons)
+}
+
+// ---------- Message Listener ---------- // 
 
 async function onMessage(event, message) {
   let fID; let fName; let fSave; let fType;
   let url = new URL(event.request.url);
   let bot = await getMe()
+
+  if (message.via_bot && message.via_bot.username == (await getMe()).username) {
+    return
+  }
 
   if (message.chat.id.toString().includes("-100")) {
     return
@@ -231,7 +308,7 @@ async function onMessage(event, message) {
 
   if (!PUBLIC_BOT && message.chat.id != BOT_OWNER) {
     const buttons = [[{ text: "Source Code", url: "https://github.com/vauth/filestream-cf" }]];
-    return sendMessage(message.chat.id, message.message_id, "Access forbidden.\nDeploy your own [filestream-cf](https://github.com/vauth/filestream-cf) bot.", buttons)
+    return sendMessage(message.chat.id, message.message_id, "*❌ Access forbidden.*\n📡 Deploy your own [filestream-cf](https://github.com/vauth/filestream-cf) bot.", buttons)
   }
 
   if (message.document){
@@ -256,7 +333,7 @@ async function onMessage(event, message) {
     fSave = await sendPhoto(BOT_CHANNEL, fID)
   } else {
     const buttons = [[{ text: "Source Code", url: "https://github.com/vauth/filestream-cf" }]];
-    return sendMessage(message.chat.id, message.message_id, "Send me any file/video/gif/audio (t<=4GB, e<=20MB)", buttons)
+    return sendMessage(message.chat.id, message.message_id, "Send me any file/video/gif/audio *(t<=4GB, e<=20MB)*.", buttons)
   }
 
   if (fSave.error_code) {return sendMessage(message.chat.id, message.message_id, fSave.description)}
@@ -267,11 +344,10 @@ async function onMessage(event, message) {
   const final_tele = `https://t.me/${bot.username}/?start=${final_hash}`
 
   const buttons = [
-    [{ text: "Telegram Link", url: final_tele }, { text: "Download Link", url: final_link }],
-    [{ text: "Stream Link", url: final_stre }]
+    [{ text: "Telegram Link", url: final_tele }, { text: "Inline Link", switch_inline_query_current_chat: final_hash }],
+    [{ text: "Stream Link", url: final_stre }, { text: "Download Link", url: final_link }]
   ];
 
-  let final_text = `*File Name:* \`${fName}\`\n*File Hash:* \`${final_hash}\``
-
-  return sendMessage(message.chat.id, message.message_id, final_text, buttons) 
+  let final_text = `*🗂 File Name:* \`${fName}\`\n*⚙️ File Hash:* \`${final_hash}\``
+  return sendMessage(message.chat.id, message.message_id, final_text, buttons)
 }
