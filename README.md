@@ -50,13 +50,14 @@ const PUBLIC_BOT = false; // Make your bot public.
 ## 📚 Response
 ```python
 Telegram Link: t.me/usernamebot/?start=ZG9uJ3QgZGVjb2Rl
-Inline Link: @bot ZG9uJ3QgZGVjb2Rl
+Inline Link: @usernamebot ZG9uJ3QgZGVjb2Rl
 Download Link: XX.XX.workers.dev/?file=ZG9uJ3QgZGVjb2Rl
 Stream Link: XX.XX.workers.dev/?file=ZG9uJ3QgZGVjb2Rl&mode=inline
 ```
 
 ### Limitation:
 - Telegram Link: `<4.00GB`
+- Inline Link: `<4.00GB`
 - Download Link: `<20.00MB`
 - Stream Link: `<20.00MB`
 
