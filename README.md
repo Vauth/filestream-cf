@@ -16,6 +16,8 @@ const PUBLIC_BOT = false; // Make your bot public.
 
 ### Setup:
 - Get `BOT_TOKEN` from [@botfather](https://t.me/botfather).
+    - Turn on `inline mode` in bot settings.
+    - Disable `inline feedback` for better results.
 - Change `BOT_WEBHOOK` with your preferred webhook.
 - Change `BOT_SECRET` with a powerful secret text (only `[A-Z, a-z, 0-9, _, -]` are allowed).
 - Change `SIA_NUMBER` with a random integer (number).
