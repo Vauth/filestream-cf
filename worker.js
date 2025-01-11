@@ -357,7 +357,7 @@ async function onMessage(event, message) {
   const final_tele = `https://t.me/${bot.username}/?start=${final_hash}`
 
   const buttons = [
-    [{ text: "Telegram Link", url: final_tele }, { text: "Inline Link", switch_inline_query_current_chat: final_hash }],
+    [{ text: "Telegram Link", url: final_tele }, { text: "Inline Link", switch_inline_query: final_hash }],
     [{ text: "Stream Link", url: final_stre }, { text: "Download Link", url: final_link }]
   ];
 
