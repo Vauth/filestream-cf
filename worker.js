@@ -184,6 +184,13 @@ async function answerInlineDocument(query_id, title, file_id, mime_type, reply_m
   } else {return await response.json()}
 }
 
+async function answerInlinePhoto(query_id, title, photo_id, reply_markup=[], id='1') {
+  const data = [{type: 'photo', id: id, title: title, photo_file_id: photo_id, reply_markup: {inline_keyboard: reply_markup}}];
+  const response = await fetch(await this.apiUrl('answerInlineQuery', {inline_query_id: query_id, results: JSON.stringify(data), cache_time: 1}))
+  if (response.status == 200) {return (await response.json()).result;
+  } else {return await response.json()}
+}
+
 async function getFile(file_id) {
     const response = await fetch(apiUrl('getFile', {file_id: file_id}))
     if (response.status == 200) {return (await response.json()).result;
@@ -261,8 +268,14 @@ async function onInline(event, inline) {
     return ERROR_406
   }
 
-  const buttons = [[{ text: "Send Again", switch_inline_query_current_chat: inline.query }]];
-  return await answerInlineDocument(inline.id, fName, fID, fType, buttons)
+  if (fType == "image/jpg") {
+    const buttons = [[{ text: "Send Again", switch_inline_query_current_chat: inline.query }]]
+    return await answerInlinePhoto(inline.id, fName || "undefined", fID, buttons)
+  } else {
+    const buttons = [[{ text: "Send Again", switch_inline_query_current_chat: inline.query }]];
+    return await answerInlineDocument(inline.id, fName || "undefined", fID, fType, buttons)
+  }
+
 }
 
 // ---------- Message Listener ---------- // 
