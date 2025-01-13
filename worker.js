@@ -191,7 +191,7 @@ class Cryptic {
   }
 }
 
-// ---------- Telegram Webhook ---------- //
+// ---------- Telegram Bot ---------- //
 
 class Bot {
   static async handleWebhook(event) {
