@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Cloudflare workers code generator.">
+  <meta property="og:title" content="Worker - Code Generator">
+  <meta property="og:description" content="Cloudflare workers code generator.">
+  <meta property="og:url" content="https://github.com/vauth">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Worker Code Generator">
+  <link rel="icon" type="image/png" href="https://i.ibb.co/pQ0tSCj/1232b12e0a0c.png">
+   <title>Worker Code Generator</title>
+
+
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 120px;
+      background-color: #EF4444;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -60px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .tooltip .tooltiptext::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: #EF4444 transparent transparent transparent;
+    }
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+    .hljs {
+      background: rgba(17, 24, 39, 1) !important; /* Custom background */
+      border-radius: 0.5rem;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-100">
+  <div class="min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="bg-gray-800 shadow-lg rounded-lg p-8 max-w-2xl w-full fade-in">
+      <h1 class="text-3xl font-bold text-center mb-6" id="mainHead">Worker Generator</h1>
+      <div id="formContainer" class="space-y-6">
+        <!-- Dynamic form fields will be injected here -->
+        <p class="text-center text-gray-400">Loading values...</p>
+      </div>
+      <button id="generateButton" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition duration-200">
+        Generate Code
+      </button>
+      <div id="codeSection" class="mt-8 hidden">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold">Generated Code</h2>
+          <button id="copyButton" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition duration-200 flex items-center">
+            <span>Copy Code</span>
+            <svg id="copyIcon" class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+          </button>
+        </div>
+        <pre id="generatedCode" class="bg-gray-900 p-4 rounded-md text-sm font-mono overflow-x-auto"><code class="language-javascript">Loading code...</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script>
+    // Name
+    const PROJECT_STN = "Filestream-CF";
+
+    // Destination
+    const PROJECT_URL = "worker.js";
+
+    // Constants
+    const PLACEHOLDERS = [
+      { name: 'BOT_TOKEN', defaultValue: '', type: 'string' },
+      { name: 'BOT_WEBHOOK', defaultValue: '/endpoint', type: 'string' },
+      { name: 'BOT_SECRET', defaultValue: '', type: 'string' },
+      { name: 'BOT_OWNER', defaultValue: '', type: 'number' },
+      { name: 'BOT_CHANNEL', defaultValue: '', type: 'number' },
+      { name: 'SIA_SECRET', defaultValue: '', type: 'string' },
+      { name: 'PUBLIC_BOT', defaultValue: 'false', type: 'boolean' },
+    ];
+
+    // DOM Elements
+    const formContainer = document.getElementById('formContainer');
+    const generateButton = document.getElementById('generateButton');
+    const codeSection = document.getElementById('codeSection');
+    const generatedCode = document.getElementById('generatedCode').querySelector('code');
+    const copyButton = document.getElementById('copyButton');
+    const copyIcon = document.getElementById('copyIcon');
+    const mainHead = document.getElementById('mainHead');
+    
+    // Modify Details
+    const ModifyDetails = () => {
+      mainHead.textContent = `${PROJECT_STN} Generator`;
+      document.title = `${PROJECT_STN} Generator`;
+    };
+
+
+    // Fetch the original code from the GitHub URL
+    const fetchOriginalCode = async () => {
+      try {
+        const response = await fetch(PROJECT_URL);
+        if (!response.ok) throw new Error('Failed to fetch code');
+        return await response.text();
+      } catch (error) {
+        console.error('Error fetching code:', error);
+        generatedCode.textContent = 'Failed to load code. Please check the URL.';
+        return null;
+      }
+    };
+
+    // Extract descriptions from the code
+    const extractDescriptions = (code) => {
+      const descriptions = {};
+      const lines = code.split('\n');
+      for (const line of lines) {
+        const match = line.match(/const\s+(\w+)\s*=\s*[^;]+;\s*\/\/\s*(.+)/);
+        if (match) {
+          const [, name, description] = match;
+          descriptions[name] = description.trim();
+        }
+      }
+      return descriptions;
+    };
+
+    // Generate form fields for placeholders
+    const generateFormFields = (placeholders, descriptions) => {
+      let formHTML = '';
+      for (const placeholder of placeholders) {
+        const description = descriptions[placeholder.name] || '';
+        if (placeholder.type === 'boolean') {
+          formHTML += `
+            <div>
+              <label for="${placeholder.name}" class="block text-sm font-medium text-gray-300">${placeholder.name}</label>
+              <select id="${placeholder.name}" name="${placeholder.name}" class="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                <option value="true" ${placeholder.defaultValue === 'true' ? 'selected' : ''}>true</option>
+                <option value="false" ${placeholder.defaultValue === 'false' ? 'selected' : ''}>false</option>
+              </select>
+              <p id="${placeholder.name}-error" class="text-red-500 text-sm mt-1 hidden">Invalid ${placeholder.type} value.</p>
+            </div>
+          `;
+        } else {
+          formHTML += `
+            <div>
+              <label for="${placeholder.name}" class="block text-sm font-medium text-gray-300">${placeholder.name}</label>
+              <input type="text" id="${placeholder.name}" name="${placeholder.name}" value="${placeholder.defaultValue}" placeholder="${description}" class="mt-1 block w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm text-gray-100 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-400">
+              <p id="${placeholder.name}-error" class="text-red-500 text-sm mt-1 hidden">Invalid ${placeholder.type} value.</p>
+            </div>
+          `;
+        }
+      }
+      formContainer.innerHTML = formHTML;
+    };
+
+    // Validate input based on placeholder type
+    const validateInput = (value, type) => {
+      if (value.trim() === '') return false; // Check for empty values
+      if (type === 'number') return !isNaN(value);
+      if (type === 'boolean') return value === 'true' || value === 'false';
+      return true; // Strings are always valid
+    };
+
+    // Check if all fields are valid
+    const areAllFieldsValid = () => {
+      let isValid = true;
+      for (const placeholder of PLACEHOLDERS) {
+        const inputValue = document.getElementById(placeholder.name)?.value;
+        const errorElement = document.getElementById(`${placeholder.name}-error`);
+
+        if (!validateInput(inputValue, placeholder.type)) {
+          isValid = false;
+          errorElement.classList.remove('hidden');
+          document.getElementById(placeholder.name).classList.add('border-red-500');
+        } else {
+          errorElement.classList.add('hidden');
+          document.getElementById(placeholder.name).classList.remove('border-red-500');
+        }
+      }
+      return isValid;
+    };
+
+    // Update specific lines in the code
+    const updateCode = (code) => {
+      const lines = code.split('\n');
+      const updatedLines = lines.map((line) => {
+        for (const placeholder of PLACEHOLDERS) {
+          if (line.includes(`const ${placeholder.name} =`)) {
+            const inputValue = document.getElementById(placeholder.name)?.value;
+
+            let newValue;
+            if (placeholder.type === 'boolean') {
+              newValue = inputValue === 'true' ? 'true' : 'false';
+            } else if (placeholder.type === 'number') {
+              newValue = inputValue;
+            } else {
+              newValue = `"${inputValue}"`;
+            }
+
+            return `const ${placeholder.name} = ${newValue};`;
+          }
+        }
+        return line;
+      });
+      return updatedLines.join('\n');
+    };
+
+    // Copy code to clipboard
+    const copyCodeToClipboard = () => {
+      const codeText = generatedCode.textContent;
+      navigator.clipboard.writeText(codeText).then(() => {
+        copyButton.classList.add('bg-green-600');
+        copyIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>`;
+        setTimeout(() => {
+          copyButton.classList.remove('bg-green-600');
+          copyIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>`;
+        }, 2000);
+      });
+    };
+
+    // Initialize the app
+    const init = async () => {
+      await ModifyDetails();
+      const originalCode = await fetchOriginalCode();
+      if (!originalCode) return;
+      const descriptions = extractDescriptions(originalCode);
+      generateFormFields(PLACEHOLDERS, descriptions);
+      generateButton.addEventListener('click', () => {
+        if (areAllFieldsValid()) {
+          const updatedCode = updateCode(originalCode);
+          generatedCode.textContent = updatedCode;
+          hljs.highlightElement(generatedCode);
+          codeSection.classList.remove('hidden');
+        }
+      });
+      copyButton.addEventListener('click', copyCodeToClipboard);
+    };
+
+    init();
+  </script>
+</body>
+</html>
