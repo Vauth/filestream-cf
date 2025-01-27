@@ -34,8 +34,12 @@ const PUBLIC_BOT = false; // Make your bot public.
 - Navigate to `Workers & Pages > Create > Create Worker`.
 - Deploy the worker by clicking **Deploy**.
 - Edit the code by clicking **Edit Code**.
-- Upload `worker.js` into **Cloudflare**.
-- Modify the [variables](#Variables).
+- **Maunally:**
+    - Upload `worker.js` into **Cloudflare**.
+    - Modify the [variables](#-variables).
+- **Dynamic:**
+    - Generate the code using [code generator](https://vauth.github.io/filestream-cf/).
+    - Copy paste the generated code to cloudflare workers.
 - Finally, **Deploy**.
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/vauth/filestream-cf)
